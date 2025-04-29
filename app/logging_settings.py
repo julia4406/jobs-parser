@@ -8,7 +8,7 @@ formatter = logging.Formatter(log_format)
 
 file_handler = RotatingFileHandler(
     "jobs_telegram.log",
-    maxBytes=40_000,
+    maxBytes=4_000,
     backupCount=1
 )
 file_handler.setLevel(logging.INFO)
