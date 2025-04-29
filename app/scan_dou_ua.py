@@ -36,10 +36,12 @@ def get_dou_jobs():
             job_url = job_tag["href"]
             job_title = job_tag.text.strip()
             job_date = el.select_one(".date").text.strip()
+            job_offerer = el.select_one(".company").text.strip()
             description = get_description(job_url)
             dou_jobs.append({
                 "title": job_title,
                 "date": job_date,
+                "company": job_offerer,
                 "url": job_url,
                 "description": description
             })
