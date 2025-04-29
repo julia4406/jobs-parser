@@ -5,11 +5,11 @@ services:
     image: redis:7
     restart: always
     ports:
-      - "6381:6379"
+      - "6379:6379"
 
   worker:
     build: .
-    restart: always
+#    restart: always
     command: celery -A celery_app.celery worker --loglevel=info
     env_file:
       - .env
@@ -18,7 +18,7 @@ services:
 
   beat:
     build: .
-    restart: always
+#    restart: always
     command: celery -A celery_app.celery beat --loglevel=info
     env_file:
       - .env
