@@ -10,20 +10,20 @@ services:
   worker:
     build: .
     restart: always
-    environment:
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - REDIS_URL=redis://redis:6381/0
+    command: celery -A celery_app.celery worker --loglevel=info
+    env_file:
+      - .env
     depends_on:
       - redis
 
   beat:
     build: .
     restart: always
-    command: celery -A app.tasks workers --loglevel=info
-    environment:
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - REDIS_URL=redis://redis:6381/0
+    command: celery -A celery_app.celery beat --loglevel=info
+    env_file:
+      - .env
     depends_on:
       - redis
+      - worker
+    volumes:
+      - ./celerybeat-schedule:/app/celerybeat-schedule

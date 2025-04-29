@@ -4,7 +4,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
-from app import cache_check
+from app import cache_checker
 from app.logging_settings import logger
 
 
@@ -42,9 +42,9 @@ def send_all_jobs():
         jobs = json.load(f)
 
     for job in jobs:
-        if not cache_check.is_sent(job["url"]):
+        if not cache_checker.is_sent(job["url"]):
             message_to_telegram(job)
-            cache_check.mark_as_sent(job["url"])
+            cache_checker.mark_as_sent(job["url"])
 
 
 if __name__ == "__main__":
