@@ -39,7 +39,7 @@ def send_jobs_from_dou():
         try:
             if not cache_checker.is_sent(job["url"]):
                 message_to_telegram(job)
-                print("Well done!")
+                logger.info("New jobs sent.")
                 cache_checker.mark_as_sent(job["url"])
         except Exception as e:
             logger.error(f"Error sending job {job['url']}: {e}")
