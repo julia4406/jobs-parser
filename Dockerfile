@@ -1,11 +1,10 @@
 FROM python:3.13-slim
 
-WORKDIR /app
+WORKDIR /bot
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ app/
-COPY celery_app.py .
+COPY app/ /bot/app
 
-CMD ["celery", "-A", "celery_app.celery", "worker", "--loglevel=info"]
+COPY .env .env

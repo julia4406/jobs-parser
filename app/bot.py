@@ -1,6 +1,7 @@
 import html
 import json
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -9,6 +10,7 @@ from app.logging_settings import logger
 
 
 load_dotenv()
+
 API_URL = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage"
 
 def message_to_telegram(msg: dict):

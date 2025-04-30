@@ -10,20 +10,31 @@ services:
   worker:
     build: .
 #    restart: always
-    command: celery -A celery_app.celery worker --loglevel=info
+    command: celery -A app.celery_app.celery_app worker --loglevel=info
     env_file:
       - .env
     depends_on:
       - redis
 
-  beat:
-    build: .
-#    restart: always
-    command: celery -A celery_app.celery beat --loglevel=info
-    env_file:
-      - .env
+#  beat:
+#    build: .
+##    restart: always
+#    command: celery -A celery_app.celery beat --loglevel=info
+#    env_file:
+#      - .env
+#    depends_on:
+#      - redis
+#      - worker
+#    volumes:
+#      - ./celerybeat-schedule:/app/celerybeat-schedule
+
+  main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -m app.main
     depends_on:
       - redis
       - worker
-    volumes:
-      - ./celerybeat-schedule:/app/celerybeat-schedule
+    env_file:
+      - .env
