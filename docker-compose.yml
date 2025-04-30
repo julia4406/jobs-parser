@@ -18,17 +18,16 @@ services:
     volumes:
       - ./logs:/bot/logs
 
-#  beat:
-#    build: .
-##    restart: always
-#    command: celery -A celery_app.celery beat --loglevel=info
-#    env_file:
-#      - .env
-#    depends_on:
-#      - redis
-#      - worker
-#    volumes:
-#      - ./celerybeat-schedule:/app/celerybeat-schedule
+  beat:
+    build: .
+#    restart: always
+    command: celery -A app.celery_app.celery_app beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - worker
+
 
   main:
     build:

@@ -3,11 +3,9 @@ from app.celery_app import send_jobs_from_dou
 
 
 def new_jobs_on_dou():
-    jobs = get_dou_jobs()
-    if jobs:
-        send_jobs_from_dou.delay(jobs)
+    send_jobs_from_dou.delay()
 
 
 if __name__ == "__main__":
-    print("Script started!")
-    new_jobs_on_dou()
+    print("Poihaly!")
+    # new_jobs_on_dou()
