@@ -9,7 +9,7 @@ services:
 
   worker:
     build: .
-    restart: always
+    restart: on-failure
     command: celery -A app.celery_app.celery_app worker --loglevel=info
     env_file:
       - .env
@@ -20,24 +20,10 @@ services:
 
   beat:
     build: .
-#    restart: always
+    restart: on-failure
     command: celery -A app.celery_app.celery_app beat --loglevel=info
     env_file:
       - .env
     depends_on:
       - redis
       - worker
-
-
-  main:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: python -m app.main
-    depends_on:
-      - redis
-      - worker
-    env_file:
-      - .env
-    volumes:
-      - ./logs:/bot/logs
