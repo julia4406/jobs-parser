@@ -1,10 +1,13 @@
 import os
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
 from celery import Celery
 
 from app import cache_checker
 from app.bot import message_to_telegram
 from app.logging_settings import logger
+from app.scan_dou_ua import get_dou_jobs
 
 load_dotenv()
 
@@ -22,9 +25,16 @@ celery_app.conf.update(
     enable_utc=True,
 )
 
+celery_app.conf.beat_schedule = {
+    "send_jobs_from_dou_schedule": {
+        "task": "app.celery_app.send_jobs_from_dou",
+        "schedule": crontab(minute=0, hour="9,13,17,20")
+    }
+}
 
 @celery_app.task
-def send_jobs_from_dou(jobs: list):
+def send_jobs_from_dou():
+    jobs = get_dou_jobs()
     for job in jobs:
         try:
             if not cache_checker.is_sent(job["url"]):
