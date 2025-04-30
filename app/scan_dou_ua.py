@@ -26,7 +26,7 @@ def get_description(url):
 
 
 def get_dou_jobs():
-    response = requests.get(url=URL_2, headers=HEADERS)
+    response = requests.get(url=URL_1, headers=HEADERS)
     soup = BeautifulSoup(response.text, "html.parser")
     dou_jobs = []
 
