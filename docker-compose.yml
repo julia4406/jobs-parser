@@ -9,12 +9,14 @@ services:
 
   worker:
     build: .
-#    restart: always
+    restart: always
     command: celery -A app.celery_app.celery_app worker --loglevel=info
     env_file:
       - .env
     depends_on:
       - redis
+    volumes:
+      - ./logs:/bot/logs
 
 #  beat:
 #    build: .
@@ -38,3 +40,5 @@ services:
       - worker
     env_file:
       - .env
+    volumes:
+      - ./logs:/bot/logs
