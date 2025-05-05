@@ -53,8 +53,32 @@ def start_driver(headless=False):
     return driver
 
 
+def cookies_valid():
+    if not os.path.exists(COOKIES_FILE):
+        return False
+
+    with open(COOKIES_FILE, "r") as f:
+        cookies = json.load(f)
+        for cookie in cookies:
+            if cookie.get("name") == "sessionid":
+                expiry = cookie.get("expiry")
+                if expiry and expiry > time.time():
+                    return True
+    return False
+
+
 def authenticate():
     driver = start_driver(headless=True)
+
+    if cookies_valid():
+        driver.get(DJINNI_URL)
+        load_cookies(driver, COOKIES_FILE)
+        driver.get(DJINNI_URL + "/my/")
+
+        if is_authenticated(driver):
+            print("Авторизація через cookies")
+            return driver
+
     login_url = urljoin(DJINNI_URL, "login")
     driver.get(login_url)
 
