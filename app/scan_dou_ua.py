@@ -24,13 +24,13 @@ def get_dou_jobs(urls: dict) -> list[dict]:
     jobs = []
     jobs_in_url = []
     for experience, url in urls.items():
-        jobs_in_url = parce_dou_jobs(url=url, experience=experience)
+        jobs_in_url = parse_dou_jobs(url=url, experience=experience)
         if jobs_in_url:
             jobs.extend(jobs_in_url)
     return jobs
 
 
-def parce_dou_jobs(url: str, experience: str) -> list[dict]:
+def parse_dou_jobs(url: str, experience: str) -> list[dict]:
     response = requests.get(url=url, headers=HEADERS)
     soup = BeautifulSoup(response.text, "html.parser")
     dou_jobs = []
