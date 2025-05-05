@@ -1,23 +1,23 @@
 import html
-import json
 import os
 
 import requests
 from dotenv import load_dotenv
 
-from app import cache_checker
 from app.logging_settings import logger
 
 
 load_dotenv()
 
-API_URL = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage"
+BASE_TG_URL = "https://api.telegram.org"
+API_URL = f"{BASE_TG_URL}/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage"
+
 
 def message_to_telegram(msg: dict):
     description = html.escape(msg["description"])[:2000]
 
     text = (
-        f"<b>{msg['title']}</b>\n"
+        f"<b>{msg['title']} ({msg['experience']})</b>\n"
         f"{msg['date']}\n"
         f"<b>{msg['company']}</b>\n"
         f"{description}\n"
@@ -37,17 +37,3 @@ def message_to_telegram(msg: dict):
         logger.error(f"Error: {response.status_code} - {response.text}")
     else:
         logger.info("Vacancy sent.")
-
-
-def send_all_jobs():
-    with open("jobs.json", "r", encoding="utf-8") as f:
-        jobs = json.load(f)
-
-    for job in jobs:
-        if not cache_checker.is_sent(job["url"]):
-            message_to_telegram(job)
-            cache_checker.mark_as_sent(job["url"])
-
-
-if __name__ == "__main__":
-    send_all_jobs()

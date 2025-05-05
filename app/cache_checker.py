@@ -15,6 +15,7 @@ redis_client = redis.Redis(
 
 CACHE_KEY = "sent_job_url"
 
+
 def is_sent(job_url: str):
     return redis_client.sismember(CACHE_KEY, job_url)
 

@@ -4,11 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-
-URL_0 = "https://jobs.dou.ua/first-job/?from=exp"
-URL_1 = "https://jobs.dou.ua/vacancies/?category=Python&exp=0-1"
-URL_2 = "https://jobs.dou.ua/vacancies/?category=Python&exp=1-3"
-
 ua = UserAgent()
 HEADERS = {"user-agent": ua.random}
 
@@ -25,8 +20,18 @@ def get_description(url):
     return description
 
 
-def get_dou_jobs():
-    response = requests.get(url=URL_1, headers=HEADERS)
+def get_dou_jobs(urls: dict) -> list[dict]:
+    jobs = []
+    jobs_in_url = []
+    for experience, url in urls.items():
+        jobs_in_url = parce_dou_jobs(url=url, experience=experience)
+        if jobs_in_url:
+            jobs.extend(jobs_in_url)
+    return jobs
+
+
+def parce_dou_jobs(url: str, experience: str) -> list[dict]:
+    response = requests.get(url=url, headers=HEADERS)
     soup = BeautifulSoup(response.text, "html.parser")
     dou_jobs = []
 
@@ -35,11 +40,13 @@ def get_dou_jobs():
         if job_tag:
             job_url = job_tag["href"]
             job_title = job_tag.text.strip()
+            job_experience = experience
             job_date = el.select_one(".date").text.strip()
             job_offerer = el.select_one(".company").text.strip()
             description = get_description(job_url)
             dou_jobs.append({
                 "title": job_title,
+                "experience": job_experience,
                 "date": job_date,
                 "company": job_offerer,
                 "url": job_url,
@@ -47,6 +54,7 @@ def get_dou_jobs():
             })
 
     return dou_jobs
+
 
 def save_to_json():
     data = get_dou_jobs()
