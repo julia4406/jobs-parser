@@ -11,6 +11,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from app.bot import message_login_djinni_failed
+
 
 load_dotenv()
 
@@ -76,7 +78,6 @@ def authenticate():
         driver.get(DJINNI_URL + "/my/")
 
         if is_authenticated(driver):
-            print("Авторизація через cookies")
             return driver
 
     login_url = urljoin(DJINNI_URL, "login")
@@ -84,7 +85,6 @@ def authenticate():
 
     try:
         wait = WebDriverWait(driver, 10)
-        print("Current URL:", driver.current_url)
 
         email_input = wait.until(
             EC.visibility_of_element_located((By.ID, "email"))
@@ -97,10 +97,8 @@ def authenticate():
 
         wait.until(lambda d: "/my/" in d.current_url)
 
-        print("Успішний логін")
-
     except Exception as e:
-        print("Login failed:", e)
+        message_login_djinni_failed(error=str(e))
         driver.quit()
         raise
 
