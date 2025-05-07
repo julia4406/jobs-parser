@@ -16,9 +16,9 @@ redis_client = redis.Redis(
 CACHE_KEY = "sent_job_url"
 
 
-def is_sent(job_url: str):
+def is_parsed(job_url: str):
     return redis_client.sismember(CACHE_KEY, job_url)
 
 
-def mark_as_sent(job_url: str):
+def mark_as_parsed(job_url: str):
     redis_client.sadd(CACHE_KEY, job_url)
