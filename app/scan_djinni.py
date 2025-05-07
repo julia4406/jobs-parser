@@ -104,8 +104,8 @@ def get_djinni_jobs(urls: dict) -> list[dict]:
 if __name__ == "__main__":
     jobs = get_djinni_jobs({
         "first_job": f"{DJINNI_BASE}/jobs/?all_keywords=Python&exp_level=no_exp",
-        # "under_1year": "https://djinni.co/jobs/?all_keywords=Python&exp_level=1y",
-        # "2 years": "https://djinni.co/jobs/?all_keywords=Python&exp_level=2y"
+        "under_1year": "https://djinni.co/jobs/?all_keywords=Python&exp_level=1y",
+        "2 years": "https://djinni.co/jobs/?all_keywords=Python&exp_level=2y"
     })
     print("total: ", jobs)
     for job in jobs:
