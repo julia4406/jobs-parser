@@ -1,27 +1,14 @@
-from datetime import datetime
 import time
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import requests
 
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-
+from app.auth_selenium import authenticate
+from app.bot import message_to_telegram
 from app.cache_checker import is_parsed, mark_as_parsed
 from app.urls import DJINNI_BASE
 
 
-def create_driver():
-    chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/google-chrome-stable"
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
+driver = authenticate()
 
 
 def get_description(url):
@@ -36,31 +23,54 @@ def get_description(url):
     return description
 
 
-def parse_djinni_jobs(
-        url: str, experience: str, driver: webdriver
-        ) -> list[dict]:
+def get_number_of_pages(url: str):
     driver.get(url=url)
-    time.sleep(3)
+    time.sleep(10)
     page_html = driver.page_source
     soup = BeautifulSoup(page_html, "html.parser")
 
+    number_of_pages = 1
+    if soup.select(".pagination"):
+        number_of_pages = soup.select(
+                ".pagination li.page-item"
+                )[-2].text.strip()
+    return int(number_of_pages)
+
+
+def parse_djinni_jobs(url: str, experience: str) -> list[dict]:
+    number_of_pages = get_number_of_pages(url)
+
     djinni_jobs = []
+    stop_parse = False
 
-    jobs_list = soup.select('.list-jobs li[id^="job-item"]')
+    for page in range(1, number_of_pages + 1):
+        page_url = f"{url}&page={page}"
 
-    for el in jobs_list:
-        parse_job_url = el.select_one(".job-item__title-link")["href"]
-        job_url = f"{DJINNI_BASE}{parse_job_url}"
+        driver.get(url=page_url)
+        time.sleep(10)
 
-        if not is_parsed(job_url):
+        page_html = driver.page_source
+        soup = BeautifulSoup(page_html, "html.parser")
+
+        jobs_list = soup.select('.list-jobs li[id^="job-item"]')
+
+        if stop_parse:
+            break
+
+        for el in jobs_list:
+            parse_job_url = el.select_one(".job-item__title-link")["href"]
+            job_url = f"{DJINNI_BASE}{parse_job_url}"
+
+            if is_parsed(job_url):
+                stop_parse = True
+                break
+
             job_title = el.select_one(".job-item__title-link").text.strip()
             job_experience = experience
             parse_data = el.select("div.text-secondary span")
             for span in parse_data:
                 if span.has_attr("data-original-title"):
                     job_date = span["data-original-title"].split()[1]
-                else:
-                    job_date = datetime.now()
             job_offerer = el.select_one(".text-body").text.strip()
             description = get_description(job_url)
             djinni_jobs.append({
@@ -74,27 +84,16 @@ def parse_djinni_jobs(
 
             mark_as_parsed(job_url)
 
+    # driver.quit()
+
     return djinni_jobs
 
 
 def get_djinni_jobs(urls: dict) -> list[dict]:
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.binary_location = "/usr/bin/google-chrome"
-
-    driver = webdriver.Remote(
-        command_executor='http://selenium:4444/wd/hub',
-        options=chrome_options
-    )
-
     jobs = []
     jobs_in_url = []
     for experience, url in urls.items():
-        jobs_in_url = parse_djinni_jobs(
-            url=url, experience=experience, driver=driver
-            )
+        jobs_in_url = parse_djinni_jobs(url=url, experience=experience)
         if jobs_in_url:
             jobs.extend(jobs_in_url)
     driver.quit()

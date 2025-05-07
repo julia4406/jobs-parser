@@ -4,31 +4,16 @@ from bs4 import BeautifulSoup
 import requests
 
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-from app.cache_checker import is_parsed, mark_as_parsed
 from app.urls import DJINNI_BASE
 
 
-def create_driver():
-    chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/google-chrome-stable"
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
-
-
-def get_description(url):
+def get_description(url, driver):
     description = ""
-    response = requests.get(url=url)
+    driver.get(url)
     time.sleep(5)
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = BeautifulSoup(driver.page_source, "html.parser")
     tag = soup.select_one(".job-post__description")
     if tag:
         description = tag.get_text(separator="\n", strip=True)
@@ -37,7 +22,7 @@ def get_description(url):
 
 
 def parse_djinni_jobs(
-        url: str, experience: str, driver: webdriver
+        url: str, experience: str, driver
         ) -> list[dict]:
     driver.get(url=url)
     time.sleep(3)
@@ -52,27 +37,24 @@ def parse_djinni_jobs(
         parse_job_url = el.select_one(".job-item__title-link")["href"]
         job_url = f"{DJINNI_BASE}{parse_job_url}"
 
-        if not is_parsed(job_url):
-            job_title = el.select_one(".job-item__title-link").text.strip()
-            job_experience = experience
-            parse_data = el.select("div.text-secondary span")
-            for span in parse_data:
-                if span.has_attr("data-original-title"):
-                    job_date = span["data-original-title"].split()[1]
-                else:
-                    job_date = datetime.now()
-            job_offerer = el.select_one(".text-body").text.strip()
-            description = get_description(job_url)
-            djinni_jobs.append({
-                "title": job_title,
-                "experience": job_experience,
-                "date": job_date,
-                "company": job_offerer,
-                "url": job_url,
-                "description": description
-            })
-
-            mark_as_parsed(job_url)
+        job_title = el.select_one(".job-item__title-link").text.strip()
+        job_experience = experience
+        parse_data = el.select("div.text-secondary span")
+        for span in parse_data:
+            if span.has_attr("data-original-title"):
+                job_date = span["data-original-title"].split()[1]
+            else:
+                job_date = datetime.now()
+        job_offerer = el.select_one(".text-body").text.strip()
+        description = get_description(job_url, driver)
+        djinni_jobs.append({
+            "title": job_title,
+            "experience": job_experience,
+            "date": job_date,
+            "company": job_offerer,
+            "url": job_url,
+            "description": description
+        })
 
     return djinni_jobs
 
@@ -82,10 +64,9 @@ def get_djinni_jobs(urls: dict) -> list[dict]:
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.binary_location = "/usr/bin/google-chrome"
 
     driver = webdriver.Remote(
-        command_executor='http://selenium:4444/wd/hub',
+        command_executor='http://localhost:4444/wd/hub',
         options=chrome_options
     )
 
