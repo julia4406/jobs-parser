@@ -39,10 +39,10 @@ def message_to_telegram(msg: dict):
         logger.info("Vacancy sent.")
 
 
-def message_login_djinni_failed(error: str):
+def message_login_djinni_failed():
     payload = {
         "chat_id": os.getenv("TELEGRAM_CHAT_ID"),
-        "text": f"<b>❌ Login to Djinni failed:</b>\n<pre>{error}</pre>",
+        "text": "<b>❌ Login to Djinni failed!</b>",
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
@@ -50,4 +50,4 @@ def message_login_djinni_failed(error: str):
     try:
         requests.post(API_URL, data=payload)
     except Exception as ex:
-        print("Failed to send Telegram message:", ex)
+        logger.error("Failed to send Telegram message!", ex)

@@ -97,8 +97,8 @@ def authenticate():
 
         wait.until(lambda d: "/my/" in d.current_url)
 
-    except Exception as e:
-        message_login_djinni_failed(error=str(e))
+    except Exception:
+        message_login_djinni_failed()
         driver.quit()
         raise
 
