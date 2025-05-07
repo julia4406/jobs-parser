@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
+from app.cache_checker import is_parsed, mark_as_parsed
+
 ua = UserAgent()
 HEADERS = {"user-agent": ua.random}
 
@@ -39,6 +41,8 @@ def parse_dou_jobs(url: str, experience: str) -> list[dict]:
         job_tag = el.select_one(".vt")
         if job_tag:
             job_url = job_tag["href"]
+            if is_parsed(job_url):
+                break
             job_title = job_tag.text.strip()
             job_experience = experience
             job_date = el.select_one(".date").text.strip()
@@ -52,7 +56,7 @@ def parse_dou_jobs(url: str, experience: str) -> list[dict]:
                 "url": job_url,
                 "description": description
             })
-
+            mark_as_parsed(job_url)
     return dou_jobs
 
 
