@@ -5,6 +5,8 @@ from urllib.parse import urljoin
 
 from dotenv import load_dotenv
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -39,7 +41,7 @@ def load_cookies(driver, path):
 
 def is_authenticated(driver):
     driver.get(DJINNI_URL + "/my/")
-    time.sleep(3)
+    time.sleep(5)
     return "login" not in driver.current_url.lower()
 
 
@@ -49,9 +51,12 @@ def start_driver(headless=False):
         chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Remote(
+        command_executor='http://selenium:4444/wd/hub',
+        options=chrome_options
+    )
     return driver
 
 
