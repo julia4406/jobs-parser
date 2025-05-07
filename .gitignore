@@ -1,4 +1,10 @@
 /.venv/
+.env
+.env_local
+logs
+app/cookies.json
+*/__pycache__/
+todo.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm+all
