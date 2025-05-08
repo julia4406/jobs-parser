@@ -4,24 +4,26 @@ from bs4 import BeautifulSoup
 import requests
 
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+# from webdriver_manager.chrome import ChromeDriverManager
+# from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.chrome.options import Options
 
+from app.auth_selenium import authenticate
 from app.cache_checker import is_parsed, mark_as_parsed
 from app.urls import DJINNI_BASE
+from app.logging_settings import logger
 
 
-def create_driver():
-    chrome_options = Options()
-    chrome_options.binary_location = "/usr/bin/google-chrome-stable"
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+# def create_driver():
+#     chrome_options = Options()
+#     chrome_options.binary_location = "/usr/bin/google-chrome-stable"
+#     chrome_options.add_argument("--headless")
+#     chrome_options.add_argument("--no-sandbox")
+#     chrome_options.add_argument("--disable-dev-shm-usage")
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
+#     service = Service(ChromeDriverManager().install())
+#     driver = webdriver.Chrome(service=service, options=chrome_options)
+#     return driver
 
 
 def get_description(url):
@@ -73,21 +75,24 @@ def parse_djinni_jobs(
             })
 
             mark_as_parsed(job_url)
-
+    logger.info("First page parsed")
     return djinni_jobs
 
 
 def get_djinni_jobs(urls: dict) -> list[dict]:
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.binary_location = "/usr/bin/google-chrome"
+    # chrome_options = Options()
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--no-sandbox')
+    # chrome_options.add_argument('--disable-dev-shm-usage')
+    # chrome_options.binary_location = "/usr/bin/google-chrome"
 
-    driver = webdriver.Remote(
-        command_executor='http://selenium:4444/wd/hub',
-        options=chrome_options
-    )
+    # driver = webdriver.Remote(
+    #     command_executor='http://selenium:4444/wd/hub',
+    #     options=chrome_options
+    # )
+
+    driver = authenticate()
+    logger.info("Driver Started.")
 
     jobs = []
     jobs_in_url = []
@@ -104,8 +109,8 @@ def get_djinni_jobs(urls: dict) -> list[dict]:
 if __name__ == "__main__":
     jobs = get_djinni_jobs({
         "first_job": f"{DJINNI_BASE}/jobs/?all_keywords=Python&exp_level=no_exp",
-        # "under_1year": "https://djinni.co/jobs/?all_keywords=Python&exp_level=1y",
-        # "2 years": "https://djinni.co/jobs/?all_keywords=Python&exp_level=2y"
+        "under_1year": "https://djinni.co/jobs/?all_keywords=Python&exp_level=1y",
+        "2 years": "https://djinni.co/jobs/?all_keywords=Python&exp_level=2y"
     })
     print("total: ", jobs)
     for job in jobs:
