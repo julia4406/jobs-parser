@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 from celery.schedules import crontab
@@ -30,11 +31,12 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     "send_jobs_from_dou_schedule": {
         "task": "app.celery_app.send_jobs_from_dou",
-        "schedule": crontab(minute=45, hour="9,13,14,20")
+        "schedule": crontab(minute=45, hour="9,13,17,20")
     },
     "send_jobs_from_djinni_schedule": {
         "task": "app.celery_app.send_jobs_from_djinni",
-        "schedule": crontab(minute=50, hour="9,13,14,20")
+        "schedule": crontab(minute=50, hour="9,13,17,20")
+        # "schedule": timedelta(seconds=30)
     }
 }
 
